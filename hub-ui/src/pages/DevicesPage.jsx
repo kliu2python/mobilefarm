@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import DeviceCard from '../components/DeviceCard';
-import DeviceControlPanel from '../components/DeviceControlPanel';
 import PageHeader from '../components/PageHeader';
 import { useApi } from '../hooks/useApi';
 
@@ -9,7 +8,6 @@ export default function DevicesPage() {
   const [devices, setDevices] = useState([]);
   const [providers, setProviders] = useState([]);
   const [workspaces, setWorkspaces] = useState([]);
-  const [selected, setSelected] = useState(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({ os: 'all', provider: 'all', workspace: 'all' });
   const [error, setError] = useState(null);
@@ -119,11 +117,9 @@ export default function DevicesPage() {
 
       <div className="device-grid">
         {filtered.map((device) => (
-          <DeviceCard key={device.UDID} device={device} onSelect={setSelected} onRelease={release} />
+          <DeviceCard key={device.UDID} device={device} onRelease={release} />
         ))}
       </div>
-
-      {selected && <DeviceControlPanel device={selected} onClose={() => setSelected(null)} />}
     </div>
   );
 }

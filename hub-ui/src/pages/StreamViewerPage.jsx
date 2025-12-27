@@ -35,7 +35,15 @@ export default function StreamViewerPage() {
   const [wsStatus, setWsStatus] = useState('connecting');
   const [wsMessage, setWsMessage] = useState('');
   const [error, setError] = useState(null);
+  const [actionMessage, setActionMessage] = useState('');
+  const [installedApps, setInstalledApps] = useState([]);
+  const [selectedApp, setSelectedApp] = useState('');
+  const [textInput, setTextInput] = useState('');
+  const [screenshot, setScreenshot] = useState('');
+  const [uploading, setUploading] = useState(false);
   const reconnectRef = useRef(null);
+  const frameRef = useRef(null);
+  const dragRef = useRef(null);
 
   const streamUrl = useMemo(() => {
     if (!udid || !token) return null;
@@ -59,6 +67,18 @@ export default function StreamViewerPage() {
 
     request(`/device/${udid}/info`)
       .then((data) => setInfo(data.result || data))
+      .catch((err) => setError(err.message));
+  }, [request, udid]);
+
+  useEffect(() => {
+    if (!udid) return;
+
+    request(`/device/${udid}/apps`)
+      .then((data) => {
+        const apps = data.result || data;
+        setInstalledApps(apps || []);
+        setSelectedApp((apps || [])[0] || '');
+      })
       .catch((err) => setError(err.message));
   }, [request, udid]);
 
@@ -139,6 +159,102 @@ export default function StreamViewerPage() {
     };
   }, [info?.workspace_id, info?.WorkspaceID, info?.workspaceId, token, udid]);
 
+  const mapToDeviceCoordinates = (clientX, clientY) => {
+    if (!frameRef.current) return null;
+    const rect = frameRef.current.getBoundingClientRect();
+    const ratioX = (clientX - rect.left) / rect.width;
+    const ratioY = (clientY - rect.top) / rect.height;
+    const screenWidth = info?.screen_width || info?.ScreenWidth;
+    const screenHeight = info?.screen_height || info?.ScreenHeight;
+    if (!screenWidth || !screenHeight) return null;
+    return {
+      x: Math.round(ratioX * screenWidth),
+      y: Math.round(ratioY * screenHeight),
+    };
+  };
+
+  const sendCommand = async (path, payload = null, options = {}) => {
+    setActionMessage('');
+    try {
+      const isForm = payload instanceof FormData;
+      const response = await request(`/device/${udid}${path}`, {
+        method: options.method || 'POST',
+        body: isForm || payload === null ? payload : JSON.stringify(payload),
+        headers: options.headers,
+      });
+      const nextMessage = response?.message || 'Action executed';
+      setActionMessage(nextMessage);
+      if (options.onSuccess) options.onSuccess(response);
+    } catch (err) {
+      setActionMessage(err.message);
+    }
+  };
+
+  const handlePointerDown = (event) => {
+    const mapped = mapToDeviceCoordinates(event.clientX, event.clientY);
+    if (!mapped) return;
+    dragRef.current = {
+      start: mapped,
+      clientStart: { x: event.clientX, y: event.clientY },
+    };
+  };
+
+  const handlePointerUp = (event) => {
+    if (!dragRef.current) return;
+    const end = mapToDeviceCoordinates(event.clientX, event.clientY);
+    if (!end) return;
+    const { start, clientStart } = dragRef.current;
+    dragRef.current = null;
+
+    const distance = Math.hypot(event.clientX - clientStart.x, event.clientY - clientStart.y);
+    if (distance < 10) {
+      sendCommand('/tap', { x: start.x, y: start.y });
+    } else {
+      sendCommand('/swipe', { x: start.x, y: start.y, endX: end.x, endY: end.y });
+    }
+  };
+
+  const requestScreenshot = () => {
+    sendCommand('/screenshot', null, {
+      onSuccess: (response) => {
+        const data = response?.result || response?.screenshot || '';
+        if (data) {
+          setScreenshot(`data:image/png;base64,${data}`);
+        }
+      },
+    });
+  };
+
+  const handleUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    await sendCommand('/uploadAndInstallApp', formData, {
+      onSuccess: () => {
+        request(`/device/${udid}/apps`).then((data) => {
+          const apps = data.result || data;
+          setInstalledApps(apps || []);
+          setSelectedApp((apps || [])[0] || '');
+        });
+      },
+    });
+    setUploading(false);
+    event.target.value = '';
+  };
+
+  const uninstallSelectedApp = () => {
+    if (!selectedApp) return;
+    sendCommand('/uninstallApp', { app: selectedApp }, {
+      onSuccess: (res) => {
+        const apps = res?.result || installedApps.filter((app) => app !== selectedApp);
+        setInstalledApps(apps || []);
+        setSelectedApp((apps || [])[0] || '');
+      },
+    });
+  };
+
   return (
     <div className="page">
       <PageHeader
@@ -180,19 +296,77 @@ export default function StreamViewerPage() {
         </div>
       </div>
 
-      <div className="panel">
-        <div className="device-frame">
-          <div className="device-glow" />
-          <div className="device-preview live">
-            <div className="status-row">
-              <span className="pill pill-info">MJPEG stream</span>
-              <span className="pill pill-dark">{udid}</span>
+      <div className="panel section-grid">
+        <div>
+          <h4>Controls</h4>
+          <div className="button-row">
+            <button className="ghost" onClick={() => sendCommand('/lock')}>Lock</button>
+            <button className="ghost" onClick={() => sendCommand('/unlock')}>Unlock</button>
+            <button className="ghost" onClick={() => sendCommand('/home')}>Home</button>
+            <button className="ghost" onClick={requestScreenshot}>Screenshot</button>
+          </div>
+          <label htmlFor="typeText">Type text</label>
+          <div className="button-row">
+            <input
+              id="typeText"
+              value={textInput}
+              onChange={(e) => setTextInput(e.target.value)}
+              placeholder="Type something and press send"
+            />
+            <button className="ghost" onClick={() => sendCommand('/typeText', { text: textInput })} disabled={!textInput}>
+              Send
+            </button>
+          </div>
+          <div className="button-row">
+            <label className="ghost" htmlFor="upload-app">
+              {uploading ? 'Uploading…' : 'Upload and install app'}
+            </label>
+            <input id="upload-app" type="file" onChange={handleUpload} style={{ display: 'none' }} />
+          </div>
+          <div className="button-row">
+            <select value={selectedApp} onChange={(e) => setSelectedApp(e.target.value)}>
+              {installedApps.map((app) => (
+                <option key={app} value={app}>
+                  {app}
+                </option>
+              ))}
+            </select>
+            <button className="ghost" onClick={uninstallSelectedApp} disabled={!selectedApp}>
+              Uninstall app
+            </button>
+          </div>
+          {actionMessage && <p className="muted">{actionMessage}</p>}
+          {screenshot && (
+            <div className="stacked-links">
+              <img src={screenshot} alt="Latest screenshot" className="stream-view" />
+              <a className="ghost" href={screenshot} download={`screenshot-${udid}.png`}>
+                Download screenshot
+              </a>
             </div>
-            {streamUrl ? (
-              <img className="stream-view" src={streamUrl} alt={`Live stream for ${udid}`} />
-            ) : (
-              <p className="muted">Stream unavailable: missing token.</p>
-            )}
+          )}
+        </div>
+
+        <div>
+          <div className="device-frame" ref={frameRef}>
+            <div className="device-glow" />
+            <div className="device-preview live">
+              <div className="status-row">
+                <span className="pill pill-info">MJPEG stream</span>
+                <span className="pill pill-dark">{udid}</span>
+              </div>
+              {streamUrl ? (
+                <img
+                  className="stream-view"
+                  src={streamUrl}
+                  alt={`Live stream for ${udid}`}
+                  onPointerDown={handlePointerDown}
+                  onPointerUp={handlePointerUp}
+                />
+              ) : (
+                <p className="muted">Stream unavailable: missing token.</p>
+              )}
+              <p className="muted">Tap or drag on the stream to send touch or swipe commands.</p>
+            </div>
           </div>
         </div>
       </div>
