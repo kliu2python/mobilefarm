@@ -5,38 +5,49 @@ function StatusPill({ label, tone = 'default' }) {
 }
 
 export default function DeviceCard({ device, onSelect, onRelease }) {
-  const { UDID, Name, OS, OSVersion, Provider, Usage, Connected, Available, InUse } = device;
+  const info = device.info || device;
+
+  const udid = info.UDID || info.udid;
+  const name = info.Name || info.name || udid;
+  const os = info.OS || info.os;
+  const osVersion = info.OSVersion || info.os_version;
+  const provider = info.Provider || info.provider;
+  const usage = info.Usage || info.usage;
+  const connected =
+    device.Connected ?? device.connected ?? info.Connected ?? info.connected ?? false;
+  const available = device.Available ?? device.available ?? info.Available ?? info.available;
+  const inUse = device.InUse ?? device.in_use ?? info.InUse ?? info.in_use;
 
   return (
     <div className="device-card">
       <div className="device-card__header">
         <div>
-          <p className="eyebrow">{Provider}</p>
-          <h3>{Name || UDID}</h3>
+          <p className="eyebrow">{provider}</p>
+          <h3>{name}</h3>
         </div>
         <div className="device-card__status">
-          {Connected ? (
+          {connected ? (
             <StatusPill tone="success" label="Connected" />
           ) : (
             <StatusPill tone="danger" label="Offline" />
           )}
-          {Available && !InUse && <StatusPill tone="info" label="Available" />}
-          {InUse && <StatusPill tone="warning" label="In use" />}
+          {available && !inUse && <StatusPill tone="info" label="Available" />}
+          {inUse && <StatusPill tone="warning" label="In use" />}
         </div>
       </div>
 
       <div className="device-meta">
         <div>
           <p className="muted">Platform</p>
-          <strong>{OS} {OSVersion}</strong>
+          <strong>{os} {osVersion}</strong>
         </div>
         <div>
           <p className="muted">Usage</p>
-          <strong>{Usage}</strong>
+          <strong>{usage}</strong>
         </div>
         <div>
           <p className="muted">UDID</p>
-          <code>{UDID}</code>
+          <code>{udid}</code>
         </div>
       </div>
 
@@ -44,8 +55,8 @@ export default function DeviceCard({ device, onSelect, onRelease }) {
         <button className="ghost" onClick={() => onSelect(device)}>
           Open control
         </button>
-        {InUse && (
-          <button className="text" onClick={() => onRelease(UDID)}>
+        {inUse && (
+          <button className="text" onClick={() => onRelease(udid)}>
             Release
           </button>
         )}

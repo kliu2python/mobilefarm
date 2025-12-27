@@ -73,9 +73,9 @@ export default function DashboardPage() {
 
   const stats = useMemo(() => {
     const total = inventory.length;
-    const available = inventory.filter((d) => d.Available).length;
-    const connected = inventory.filter((d) => d.Connected).length;
-    const inUse = inventory.filter((d) => d.InUse).length;
+    const available = inventory.filter((d) => d.Available || d.available).length;
+    const connected = inventory.filter((d) => d.Connected || d.connected).length;
+    const inUse = inventory.filter((d) => d.InUse || d.in_use).length;
     return [
       { label: 'Devices', value: total },
       { label: 'Available', value: available },
