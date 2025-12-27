@@ -284,6 +284,11 @@ button.ghost {
   box-shadow: none;
 }
 
+button.ghost.active {
+  background: rgba(99, 102, 241, 0.2);
+  color: #c7d2fe;
+}
+
 button.text {
   background: transparent;
   color: #93c5fd;
@@ -415,6 +420,12 @@ label {
   background: #0b1021;
   border: 1px solid rgba(148, 163, 184, 0.2);
   object-fit: contain;
+  touch-action: none;
+  transition: transform 0.2s ease;
+}
+
+.stream-view.landscape {
+  transform: rotate(90deg) scale(0.95);
 }
 
 .status-row {
