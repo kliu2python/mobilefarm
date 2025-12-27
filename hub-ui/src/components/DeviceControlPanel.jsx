@@ -88,6 +88,9 @@ export default function DeviceControlPanel({ device, onClose }) {
             <a className="ghost" href={controlUrl} target="_blank" rel="noreferrer">
               Open device status
             </a>
+            <a className="ghost" href={`/devices/${udid}/stream`} target="_blank" rel="noreferrer">
+              Open stream view
+            </a>
             <a className="ghost" href={`/device/${udid}/appium/logs`} target="_blank" rel="noreferrer">
               Appium logs
             </a>

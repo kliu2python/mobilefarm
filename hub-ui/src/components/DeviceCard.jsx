@@ -52,9 +52,14 @@ export default function DeviceCard({ device, onSelect, onRelease }) {
       </div>
 
       <div className="device-card__footer">
-        <button className="ghost" onClick={() => onSelect(device)}>
-          Open control
-        </button>
+        <div className="button-row">
+          <button className="ghost" onClick={() => onSelect(device)}>
+            Open control
+          </button>
+          <a className="ghost" href={`/devices/${udid}/stream`} target="_blank" rel="noreferrer">
+            Stream view
+          </a>
+        </div>
         {inUse && (
           <button className="text" onClick={() => onRelease(udid)}>
             Release

@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ProvidersPage from './pages/ProvidersPage';
 import DevicesPage from './pages/DevicesPage';
+import StreamViewerPage from './pages/StreamViewerPage';
 import UsersPage from './pages/UsersPage';
 import FilesPage from './pages/FilesPage';
 import SettingsPage from './pages/SettingsPage';
@@ -70,6 +71,14 @@ function Shell() {
               element={
                 <ProtectedRoute>
                   <DevicesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/devices/:udid/stream"
+              element={
+                <ProtectedRoute>
+                  <StreamViewerPage />
                 </ProtectedRoute>
               }
             />
