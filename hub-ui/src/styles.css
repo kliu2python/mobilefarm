@@ -200,6 +200,12 @@ main {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
+.button-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .pill {
   display: inline-flex;
   align-items: center;
@@ -396,6 +402,19 @@ label {
   padding: 16px;
   background: rgba(15, 23, 42, 0.9);
   border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.device-preview.live {
+  display: grid;
+  gap: 12px;
+}
+
+.stream-view {
+  width: 100%;
+  border-radius: 12px;
+  background: #0b1021;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  object-fit: contain;
 }
 
 .status-row {

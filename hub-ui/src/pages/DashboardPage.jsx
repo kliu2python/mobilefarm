@@ -5,9 +5,29 @@ import DeviceControlPanel from '../components/DeviceControlPanel';
 import { useApi } from '../hooks/useApi';
 import { useAuth } from '../hooks/useAuth';
 
+function parseStreamChunk(buffer, onData) {
+  const segments = buffer.split('\n\n');
+  const incomplete = segments.pop();
+  segments.forEach((segment) => {
+    const dataLine = segment
+      .split('\n')
+      .map((line) => line.trim())
+      .find((line) => line.startsWith('data:'));
+    if (dataLine) {
+      const payload = dataLine.replace('data:', '').trim();
+      try {
+        onData(JSON.parse(payload));
+      } catch (err) {
+        console.error('Failed to parse SSE payload', err);
+      }
+    }
+  });
+  return incomplete;
+}
+
 export default function DashboardPage() {
   const { request } = useApi();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [workspaces, setWorkspaces] = useState([]);
   const [workspaceId, setWorkspaceId] = useState('');
   const [liveDevices, setLiveDevices] = useState([]);
@@ -37,39 +57,55 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!workspaceId) return undefined;
 
-    let es;
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let controller = new AbortController();
     let reconnectTimer;
 
-    const connect = () => {
-      // Always clear any stale connection before opening a new one
-      if (es) es.close();
+    const connect = async () => {
+      try {
+        const response = await fetch(`/available-devices?workspaceId=${workspaceId}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          signal: controller.signal,
+        });
 
-      es = new EventSource(`/available-devices?workspaceId=${workspaceId}`);
-
-      es.onmessage = (event) => {
-        try {
-          const payload = JSON.parse(event.data);
-          setLiveDevices(payload || []);
-          setError(null);
-        } catch (err) {
-          console.error('SSE parse error', err);
+        if (!response.ok || !response.body) {
+          throw new Error('Live device stream unavailable');
         }
-      };
 
-      es.onerror = () => {
+        const reader = response.body.getReader();
+
+        const read = async () => {
+          const { done, value } = await reader.read();
+          if (done) return;
+          buffer += decoder.decode(value, { stream: true });
+          buffer = parseStreamChunk(buffer, (payload) => {
+            setLiveDevices(payload || []);
+            setError(null);
+          });
+          await read();
+        };
+
+        await read();
+      } catch (err) {
+        if (controller.signal.aborted) return;
         setError('Live device stream unavailable');
-        if (reconnectTimer) clearTimeout(reconnectTimer);
-        reconnectTimer = setTimeout(connect, 1000);
-      };
+        reconnectTimer = setTimeout(() => {
+          controller.abort();
+          controller = new AbortController();
+          buffer = '';
+          connect();
+        }, 1000);
+      }
     };
 
     connect();
 
     return () => {
+      controller.abort();
       if (reconnectTimer) clearTimeout(reconnectTimer);
-      if (es) es.close();
     };
-  }, [workspaceId]);
+  }, [token, workspaceId]);
 
   const stats = useMemo(() => {
     const total = inventory.length;
