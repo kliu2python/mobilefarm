@@ -35,18 +35,40 @@ export default function DashboardPage() {
   }, [request]);
 
   useEffect(() => {
-    if (!workspaceId) return;
-    const es = new EventSource(`/available-devices?workspaceId=${workspaceId}`);
-    es.onmessage = (event) => {
-      try {
-        const payload = JSON.parse(event.data);
-        setLiveDevices(payload || []);
-      } catch (err) {
-        console.error('SSE parse error', err);
-      }
+    if (!workspaceId) return undefined;
+
+    let es;
+    let reconnectTimer;
+
+    const connect = () => {
+      // Always clear any stale connection before opening a new one
+      if (es) es.close();
+
+      es = new EventSource(`/available-devices?workspaceId=${workspaceId}`);
+
+      es.onmessage = (event) => {
+        try {
+          const payload = JSON.parse(event.data);
+          setLiveDevices(payload || []);
+          setError(null);
+        } catch (err) {
+          console.error('SSE parse error', err);
+        }
+      };
+
+      es.onerror = () => {
+        setError('Live device stream unavailable');
+        if (reconnectTimer) clearTimeout(reconnectTimer);
+        reconnectTimer = setTimeout(connect, 1000);
+      };
     };
-    es.onerror = () => setError('Live device stream unavailable');
-    return () => es.close();
+
+    connect();
+
+    return () => {
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (es) es.close();
+    };
   }, [workspaceId]);
 
   const stats = useMemo(() => {
