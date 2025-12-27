@@ -14,23 +14,36 @@ export const AuthProvider = ({ children }) => {
     const savedUser = localStorage.getItem('user');
     const savedWorkspace = localStorage.getItem('selectedWorkspace');
 
-    if (token && savedUser) {
+    if (token && savedUser && savedUser !== 'undefined' && savedUser !== 'null') {
       try {
         const userData = JSON.parse(savedUser);
-        setUser(userData);
+        if (userData && typeof userData === 'object') {
+          setUser(userData);
 
-        // Load user workspaces if regular user
-        if (userData.role === 'user') {
-          loadWorkspaces();
-        }
+          // Load user workspaces if regular user
+          if (userData.role === 'user') {
+            loadWorkspaces();
+          }
 
-        if (savedWorkspace) {
-          setSelectedWorkspace(JSON.parse(savedWorkspace));
+          if (savedWorkspace && savedWorkspace !== 'undefined' && savedWorkspace !== 'null') {
+            try {
+              const workspace = JSON.parse(savedWorkspace);
+              if (workspace && typeof workspace === 'object') {
+                setSelectedWorkspace(workspace);
+              }
+            } catch (error) {
+              console.error('Failed to parse workspace data:', error);
+              localStorage.removeItem('selectedWorkspace');
+            }
+          }
+        } else {
+          throw new Error('Invalid user data');
         }
       } catch (error) {
         console.error('Failed to parse user data:', error);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.removeItem('selectedWorkspace');
       }
     }
     setLoading(false);
