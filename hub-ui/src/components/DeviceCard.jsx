@@ -4,7 +4,7 @@ function StatusPill({ label, tone = 'default' }) {
   return <span className={`pill pill-${tone}`}>{label}</span>;
 }
 
-export default function DeviceCard({ device, onSelect, onRelease }) {
+export default function DeviceCard({ device, onRelease }) {
   const info = device.info || device;
 
   const udid = info.UDID || info.udid;
@@ -53,11 +53,8 @@ export default function DeviceCard({ device, onSelect, onRelease }) {
 
       <div className="device-card__footer">
         <div className="button-row">
-          <button className="ghost" onClick={() => onSelect(device)}>
-            Open control
-          </button>
           <a className="ghost" href={`/devices/${udid}/stream`} target="_blank" rel="noreferrer">
-            Stream view
+            Open control
           </a>
         </div>
         {inUse && (
