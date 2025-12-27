@@ -1,0 +1,99 @@
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar {
+  background: #2c3e50;
+  color: white;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.nav-brand h2 {
+  margin: 0;
+  padding: 15px 0;
+  font-size: 20px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 5px;
+  flex: 1;
+  margin-left: 40px;
+}
+
+.nav-links a {
+  color: #ecf0f1;
+  text-decoration: none;
+  padding: 20px 15px;
+  transition: background 0.2s;
+  border-bottom: 3px solid transparent;
+}
+
+.nav-links a:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-links a.active {
+  background: rgba(255, 255, 255, 0.1);
+  border-bottom-color: #3498db;
+}
+
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.workspace-select {
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 14px;
+}
+
+.workspace-select option {
+  background: #2c3e50;
+  color: white;
+}
+
+.username {
+  font-size: 14px;
+  color: #ecf0f1;
+}
+
+.badge {
+  background: #e74c3c;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.btn-logout {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.btn-logout:hover {
+  background: #c0392b;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  background: #ecf0f1;
+}
