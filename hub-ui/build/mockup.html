@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GADS Hub UI mockup</title>
+    <style>
+      :root {
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #0b1526;
+        background: radial-gradient(circle at 20% 20%, #f4f7ff, #f4f7ff 40%, #e8ecf7 70%, #dfe6f3 100%);
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      .page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 48px 24px 64px;
+      }
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 12px;
+        border-radius: 999px;
+        background: #e0e7ff;
+        color: #1d4ed8;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 12px;
+      }
+      h1 {
+        margin: 16px 0 8px;
+        font-size: 42px;
+        letter-spacing: -0.02em;
+      }
+      p.lead {
+        color: #4b5563;
+        font-size: 18px;
+        line-height: 1.6;
+        margin: 0 0 32px;
+      }
+      .cta-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 32px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        border: 1px solid transparent;
+        font-weight: 700;
+        text-decoration: none;
+        color: #0b1526;
+        background: #fff;
+        box-shadow: 0 10px 40px rgba(28, 64, 139, 0.16);
+      }
+      .btn.primary {
+        background: linear-gradient(120deg, #1d4ed8, #2563eb);
+        color: #fff;
+        box-shadow: 0 15px 35px rgba(37, 99, 235, 0.3);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 14px 40px rgba(15, 23, 42, 0.12);
+        border: 1px solid #e2e8f0;
+      }
+      .card h3 { margin: 0 0 8px; }
+      .stack { display: flex; flex-direction: column; gap: 12px; }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #e0f2fe;
+        color: #075985;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-weight: 700;
+      }
+      .mock-shell {
+        margin-top: 16px;
+        background: #0f172a;
+        border-radius: 18px;
+        padding: 16px;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04), 0 18px 50px rgba(15, 23, 42, 0.5);
+        color: #e2e8f0;
+      }
+      .mock-shell .topbar { display: flex; justify-content: space-between; margin-bottom: 14px; align-items: center; }
+      .mock-shell .sidebar, .mock-shell .main { border-radius: 14px; }
+      .mock-shell .frame { display: grid; grid-template-columns: 220px 1fr; gap: 16px; }
+      .mock-shell .sidebar { background: #111827; padding: 14px; }
+      .mock-shell .sidebar .item { padding: 8px 10px; border-radius: 10px; color: #cbd5e1; }
+      .mock-shell .sidebar .item.active { background: #1d4ed8; color: #fff; }
+      .mock-shell .main { background: #0b1220; padding: 14px; }
+      .mock-shell .badges { display: flex; gap: 6px; flex-wrap: wrap; }
+      .mock-shell table { width: 100%; border-collapse: collapse; font-size: 12px; }
+      .mock-shell th, .mock-shell td { text-align: left; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+      .muted { color: #6b7280; }
+      .footer { margin-top: 40px; text-align: center; color: #6b7280; font-size: 14px; }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="eyebrow">Preview</div>
+      <h1>GADS Hub UI mockup</h1>
+      <p class="lead">
+        A static preview of the refreshed hub dashboard. This mockup mirrors the live experience shipped in
+        <code>hub-ui/static/js/main.7fd07b25.js</code> so you can visualize the sidebar navigation, cards, and resource tables
+        without running the Node build.
+      </p>
+      <div class="cta-row">
+        <a class="btn primary" href="/">Open live UI</a>
+        <a class="btn" href="../static/js/main.7fd07b25.js">View bundled script</a>
+      </div>
+
+      <div class="grid" style="margin-bottom: 24px;">
+        <div class="card stack">
+          <div class="pill">Dashboard snapshot</div>
+          <h3>Fleet at a glance</h3>
+          <p class="muted">Sample widgets showing device availability, sessions, and alerts.</p>
+          <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;">
+            <div class="card" style="padding:12px; background:#f8fafc; box-shadow:none;">
+              <div class="muted" style="font-size:12px;">Available devices</div>
+              <div style="font-size:28px; font-weight:800;">42</div>
+              <div class="pill" style="background:#dcfce7; color:#166534;">+6 since yesterday</div>
+            </div>
+            <div class="card" style="padding:12px; background:#f8fafc; box-shadow:none;">
+              <div class="muted" style="font-size:12px;">Active sessions</div>
+              <div style="font-size:28px; font-weight:800;">11</div>
+              <div class="pill" style="background:#fef9c3; color:#92400e;">2 pending approvals</div>
+            </div>
+            <div class="card" style="padding:12px; background:#f8fafc; box-shadow:none;">
+              <div class="muted" style="font-size:12px;">Recent uploads</div>
+              <div style="font-size:28px; font-weight:800;">18</div>
+              <div class="pill" style="background:#e0f2fe; color:#075985;">APK & IPA assets</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card stack">
+          <div class="pill">Navigation</div>
+          <h3>Sidebar + auth</h3>
+          <p class="muted">Quick links to dashboard, providers, devices, users, files, settings, workspaces, secret keys, and client credentials.</p>
+          <div class="mock-shell">
+            <div class="topbar">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div style="width:10px; height:10px; border-radius:50%; background:#f87171;"></div>
+                <div style="width:10px; height:10px; border-radius:50%; background:#fbbf24;"></div>
+                <div style="width:10px; height:10px; border-radius:50%; background:#34d399;"></div>
+              </div>
+              <div class="badges">
+                <span class="pill" style="background:#f1f5f9; color:#0f172a;">Token aware</span>
+                <span class="pill" style="background:#e0e7ff; color:#312e81;">React Router 6</span>
+              </div>
+            </div>
+            <div class="frame">
+              <div class="sidebar">
+                <div class="item active">Dashboard</div>
+                <div class="item">Providers</div>
+                <div class="item">Devices</div>
+                <div class="item">Users</div>
+                <div class="item">Files</div>
+                <div class="item">Settings</div>
+                <div class="item">Workspaces</div>
+                <div class="item">Secret keys</div>
+                <div class="item">Client credentials</div>
+              </div>
+              <div class="main">
+                <div class="badges" style="margin-bottom:10px;">
+                  <span class="pill" style="background:#cffafe; color:#0f172a;">Device health</span>
+                  <span class="pill">Role-based actions</span>
+                </div>
+                <table>
+                  <thead><tr><th>Device</th><th>Status</th><th>Workspace</th><th>OS</th></tr></thead>
+                  <tbody>
+                    <tr><td>Pixel 7 Pro</td><td><span class="pill" style="background:#dcfce7; color:#166534;">Ready</span></td><td>Default</td><td>Android 14</td></tr>
+                    <tr><td>iPhone 13</td><td><span class="pill" style="background:#fee2e2; color:#b91c1c;">In use</span></td><td>QA Lab</td><td>iOS 17</td></tr>
+                    <tr><td>Galaxy S22</td><td><span class="pill" style="background:#e0f2fe; color:#075985;">Updating</span></td><td>Regression</td><td>Android 13</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card stack">
+          <div class="pill">Admin flows</div>
+          <h3>Resource management</h3>
+          <p class="muted">CRUD modals and upload forms mapped to the Golang backend endpoints.</p>
+          <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+            <div class="card" style="background:#f8fafc; box-shadow:none;">
+              <div class="muted" style="font-size:12px;">Providers</div>
+              <div style="font-size:18px; font-weight:800;">Add cloud host</div>
+              <p class="muted">Create provider entries and update credentials inline.</p>
+            </div>
+            <div class="card" style="background:#f8fafc; box-shadow:none;">
+              <div class="muted" style="font-size:12px;">Files</div>
+              <div style="font-size:18px; font-weight:800;">Drag-and-drop uploads</div>
+              <p class="muted">Attach APK, IPA, and assets directly to the farm.</p>
+            </div>
+            <div class="card" style="background:#f8fafc; box-shadow:none;">
+              <div class="muted" style="font-size:12px;">Secrets</div>
+              <div style="font-size:18px; font-weight:800;">Key rotation</div>
+              <p class="muted">Rotate client credentials without redeploying the UI.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <h3 style="margin-top:0;">How to use</h3>
+        <ol style="color:#4b5563; line-height:1.6;">
+          <li>Open this mockup in your browser to skim the layout and flows.</li>
+          <li>Click <strong>Open live UI</strong> to interact with the embedded React bundle served by the Go binary (<code>go build -tags ui</code>).</li>
+          <li>Review the bundled script link to trace the same logic used in the production build.</li>
+        </ol>
+      </div>
+
+      <div class="footer">Static mockup only — no network calls are made from this page.</div>
+    </div>
+  </body>
+</html>
