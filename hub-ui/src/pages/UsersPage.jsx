@@ -8,9 +8,9 @@ export default function UsersPage() {
       listPath="/admin/users"
       createPath="/admin/user"
       updatePath="/admin/user"
-      updateMethod="PUT"
       deletePath="/admin/user"
-      identifierLabel="nickname"
+      identifierLabel="username"
+      previewKeys={['username', 'role', 'tenant']}
     />
   );
 }

@@ -10,6 +10,7 @@ export default function ProvidersPage() {
       updatePath="/admin/providers/update"
       deletePath="/admin/providers"
       identifierLabel="nickname"
+      previewKeys={['nickname', 'host_address', 'port']}
     />
   );
 }

@@ -28,28 +28,33 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ maxWidth: 480, margin: '80px auto' }} className="card">
-      <h2>Hub login</h2>
-      <p>Please authenticate to access the device farm.</p>
-      <form onSubmit={submit}>
-        <label htmlFor="username">Username</label>
-        <input
-          id="username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-        <label htmlFor="password">Password</label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Login</button>
-      </form>
-      {error && <p style={{ color: 'crimson' }}>{error}</p>}
+    <div className="content" style={{ minHeight: '100vh' }}>
+      <div className="hero-card" style={{ maxWidth: 520, margin: '80px auto' }}>
+        <p className="eyebrow">Welcome</p>
+        <h2>Sign in to the hub</h2>
+        <p className="muted">Authenticate to access devices, providers, and admin tooling.</p>
+        <form onSubmit={submit}>
+          <label htmlFor="username">Username</label>
+          <input
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
+          <label htmlFor="password">Password</label>
+          <input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button type="submit" style={{ width: '100%' }}>
+            Login
+          </button>
+        </form>
+        {error && <div className="alert" style={{ marginTop: 12 }}>{error}</div>}
+      </div>
     </div>
   );
 }

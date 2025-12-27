@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useApi } from '../hooks/useApi';
 
 export default function ResourceManager({
@@ -10,26 +10,41 @@ export default function ResourceManager({
   updateMethod = 'POST',
   deletePath,
   identifierLabel = 'id',
+  previewKeys = [],
 }) {
   const { request } = useApi();
   const [items, setItems] = useState([]);
   const [error, setError] = useState(null);
   const [body, setBody] = useState('{}');
-  const [refreshKey, setRefreshKey] = useState(0);
   const [deleteId, setDeleteId] = useState('');
 
+  const load = async () => {
+    setError(null);
+    try {
+      const data = await request(listPath);
+      const normalized = Array.isArray(data)
+        ? data
+        : data?.devices || data?.providers || data?.users || data?.workspaces || [];
+      setItems(normalized);
+      if (normalized.length > 0) {
+        setBody(JSON.stringify(normalized[0], null, 2));
+      }
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   useEffect(() => {
-    if (!listPath) return;
-    request(listPath)
-      .then((data) => setItems(Array.isArray(data) ? data : data?.devices || data?.providers || data?.users || []))
-      .catch((err) => setError(err.message));
-  }, [listPath, refreshKey, request]);
+    if (listPath) {
+      load();
+    }
+  }, [listPath]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const submit = async (path, method) => {
     setError(null);
     try {
       await request(path, { method, body });
-      setRefreshKey((x) => x + 1);
+      load();
     } catch (err) {
       setError(err.message);
     }
@@ -40,37 +55,73 @@ export default function ResourceManager({
     setError(null);
     try {
       await request(`${deletePath}/${deleteId}`, { method: 'DELETE' });
-      setRefreshKey((x) => x + 1);
       setDeleteId('');
+      load();
     } catch (err) {
       setError(err.message);
     }
   };
 
+  const columns = useMemo(() => (previewKeys.length ? previewKeys : ['id', 'name', identifierLabel]), [previewKeys, identifierLabel]);
+
   return (
-    <div className="card">
-      <div className="topbar">
+    <div className="resource-card">
+      <div className="page-header">
         <div>
-          <h3>{title}</h3>
-          <p>Interact with the {title.toLowerCase()} endpoints.</p>
+          <p className="eyebrow">{title}</p>
+          <h2>Manage {title.toLowerCase()}</h2>
+          <p className="muted">Send payloads to the backend while seeing a structured preview.</p>
         </div>
-        <button className="secondary" onClick={() => setRefreshKey((x) => x + 1)}>
-          Refresh
-        </button>
+        <div className="resource-actions">
+          <button className="ghost" onClick={load}>
+            Refresh
+          </button>
+          <button className="ghost" onClick={() => setBody(JSON.stringify(items[0] || {}, null, 2))}>
+            Prefill from first record
+          </button>
+        </div>
       </div>
 
       {error && <div className="alert">{error}</div>}
 
-      <div className="section-grid">
-        <div className="card">
-          <h4>Current data</h4>
-          {items.length === 0 ? <p>No records yet.</p> : <pre className="code-block">{JSON.stringify(items, null, 2)}</pre>}
+      <div className="resource-grid">
+        <div className="resource-body">
+          <h4>Current {title}</h4>
+          {items.length === 0 ? (
+            <p className="muted">No records yet.</p>
+          ) : (
+            <div className="resource-json">
+              {previewKeys.length ? (
+                <table className="table">
+                  <thead>
+                    <tr>
+                      {columns.map((col) => (
+                        <th key={col}>{col}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.map((item, idx) => (
+                      <tr key={idx}>
+                        {columns.map((col) => (
+                          <td key={col}>{item[col] || item[col.toUpperCase()] || item[col.toLowerCase()] || '—'}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <pre>{JSON.stringify(items, null, 2)}</pre>
+              )}
+            </div>
+          )}
         </div>
-        <div className="card">
+
+        <div className="resource-body">
           <h4>Create or update</h4>
-          <p>Submit raw JSON to the backend APIs.</p>
-          <textarea rows={8} value={body} onChange={(e) => setBody(e.target.value)} />
-          <div className="flex">
+          <p className="muted">Edit the JSON body and submit using the existing endpoints.</p>
+          <textarea rows={12} value={body} onChange={(e) => setBody(e.target.value)} />
+          <div className="resource-actions">
             {createPath && <button onClick={() => submit(createPath, createMethod)}>Create</button>}
             {updatePath && (
               <button className="secondary" onClick={() => submit(updatePath, updateMethod)}>
@@ -79,8 +130,9 @@ export default function ResourceManager({
             )}
           </div>
         </div>
+
         {deletePath && (
-          <div className="card">
+          <div className="resource-body">
             <h4>Delete</h4>
             <label htmlFor="deleteId">{identifierLabel}</label>
             <input

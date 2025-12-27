@@ -11,6 +11,7 @@ export default function WorkspacesPage() {
       updateMethod="PUT"
       deletePath="/admin/workspaces"
       identifierLabel="id"
+      previewKeys={['id', 'name', 'tenant']}
     />
   );
 }

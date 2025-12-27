@@ -11,6 +11,7 @@ export default function SecretKeysPage() {
       updateMethod="PUT"
       deletePath="/admin/secret-keys"
       identifierLabel="id"
+      previewKeys={['id', 'user', 'tenant']}
     />
   );
 }

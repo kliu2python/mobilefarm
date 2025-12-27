@@ -1,58 +1,43 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+
+const links = [
+  { to: '/', label: 'Overview' },
+  { to: '/devices', label: 'Devices' },
+  { to: '/providers', label: 'Providers' },
+  { to: '/users', label: 'Users' },
+  { to: '/files', label: 'Files' },
+  { to: '/settings', label: 'Settings' },
+  { to: '/workspaces', label: 'Workspaces' },
+  { to: '/secret-keys', label: 'Secret Keys' },
+  { to: '/client-credentials', label: 'Client Credentials' },
+];
 
 export default function Sidebar() {
-  const { isAuthenticated, setToken, setUser } = useAuth();
-
-  const logout = () => {
-    setToken(null);
-    setUser(null);
-  };
-
   return (
-    <nav>
-      <h1>GADS Hub</h1>
-      {isAuthenticated ? (
-        <>
-          <ul>
-            <li>
-              <NavLink to="/" end>
-                Dashboard
+    <aside className="sidebar">
+      <div className="logo-block">
+        <div className="logo-mark">DF</div>
+        <div>
+          <div className="logo-title">Device Farm</div>
+          <div className="logo-subtitle">Control hub</div>
+        </div>
+      </div>
+      <nav>
+        <ul>
+          {links.map((link) => (
+            <li key={link.to}>
+              <NavLink
+                to={link.to}
+                end={link.to === '/'}
+                className={({ isActive }) => (isActive ? 'active' : '')}
+              >
+                {link.label}
               </NavLink>
             </li>
-            <li>
-              <NavLink to="/providers">Providers</NavLink>
-            </li>
-            <li>
-              <NavLink to="/devices">Devices</NavLink>
-            </li>
-            <li>
-              <NavLink to="/users">Users</NavLink>
-            </li>
-            <li>
-              <NavLink to="/files">Files</NavLink>
-            </li>
-            <li>
-              <NavLink to="/settings">Global settings</NavLink>
-            </li>
-            <li>
-              <NavLink to="/workspaces">Workspaces</NavLink>
-            </li>
-            <li>
-              <NavLink to="/secret-keys">Secret keys</NavLink>
-            </li>
-            <li>
-              <NavLink to="/client-credentials">Client credentials</NavLink>
-            </li>
-          </ul>
-          <button className="secondary" onClick={logout} style={{ marginTop: 16 }}>
-            Logout
-          </button>
-        </>
-      ) : (
-        <p>Login required</p>
-      )}
-    </nav>
+          ))}
+        </ul>
+      </nav>
+    </aside>
   );
 }

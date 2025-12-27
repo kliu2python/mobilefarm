@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import PageHeader from '../components/PageHeader';
 import { useApi } from '../hooks/useApi';
 
 export default function SettingsPage() {
@@ -29,28 +30,28 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="card">
-      <div className="topbar">
-        <div>
-          <h3>Global streaming settings</h3>
-          <p>Adjust parameters used by providers and devices.</p>
-        </div>
-        <button className="secondary" onClick={save}>
-          Save changes
-        </button>
-      </div>
+    <div className="page">
+      <PageHeader
+        title="Streaming settings"
+        subtitle="Tune FPS, JPEG quality, and scaling factors used across providers."
+        actions={
+          <button onClick={save}>
+            Save changes
+          </button>
+        }
+      />
 
       {error && <div className="alert">{error}</div>}
 
       <div className="section-grid">
-        <div className="card">
+        <div className="panel">
           <h4>Current values</h4>
-          {settings ? <pre className="code-block">{JSON.stringify(settings, null, 2)}</pre> : <p>Loading…</p>}
+          {settings ? <pre className="resource-json">{JSON.stringify(settings, null, 2)}</pre> : <p className="muted">Loading…</p>}
         </div>
-        <div className="card">
+        <div className="panel">
           <h4>Edit JSON</h4>
-          <textarea rows={12} value={draft} onChange={(e) => setDraft(e.target.value)} />
-          <p className="alert">JSON is sent directly to the backend API.</p>
+          <textarea rows={14} value={draft} onChange={(e) => setDraft(e.target.value)} />
+          <p className="muted">JSON is sent directly to the backend API.</p>
         </div>
       </div>
     </div>
