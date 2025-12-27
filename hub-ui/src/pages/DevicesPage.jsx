@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import DeviceCard from '../components/DeviceCard';
 import PageHeader from '../components/PageHeader';
 import { useApi } from '../hooks/useApi';
@@ -11,6 +11,7 @@ export default function DevicesPage() {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({ os: 'all', provider: 'all', workspace: 'all' });
   const [error, setError] = useState(null);
+  const availabilityStreamsRef = useRef([]);
 
   const load = async () => {
     try {
@@ -29,6 +30,58 @@ export default function DevicesPage() {
   useEffect(() => {
     load();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const updateAvailability = useCallback((payload) => {
+    if (!payload) return;
+
+    setDevices((prevDevices) =>
+      prevDevices.map((device) => {
+        const udid = device.UDID || device.udid || device.Device?.UDID || device.Device?.Udid;
+        const latest = payload.find((entry) => (entry?.Device?.UDID || entry?.Device?.Udid) === udid);
+        if (!latest) return device;
+
+        return {
+          ...device,
+          Connected: latest.Device?.Connected ?? latest.Device?.connected ?? device.Connected,
+          Available: latest.Available ?? device.Available,
+          InUse: latest.InUse ?? device.InUse,
+          Device: latest.Device || device.Device,
+        };
+      })
+    );
+  }, []);
+
+  useEffect(() => {
+    availabilityStreamsRef.current.forEach((stream) => stream.close());
+    availabilityStreamsRef.current = [];
+
+    if (!workspaces.length) return undefined;
+
+    const workspaceIds = new Set(
+      workspaces.map((ws) => ws.id || ws.ID || ws.workspace_id || ws.workspaceId).filter(Boolean)
+    );
+
+    workspaceIds.forEach((workspaceId) => {
+      const stream = new EventSource(`/available-devices?workspaceId=${workspaceId}`);
+      stream.onmessage = (event) => {
+        try {
+          const payload = JSON.parse(event.data);
+          updateAvailability(payload);
+        } catch (e) {
+          console.error('Failed to parse availability payload', e);
+        }
+      };
+      stream.onerror = () => {
+        stream.close();
+      };
+      availabilityStreamsRef.current.push(stream);
+    });
+
+    return () => {
+      availabilityStreamsRef.current.forEach((stream) => stream.close());
+      availabilityStreamsRef.current = [];
+    };
+  }, [workspaces, updateAvailability]);
 
   const filtered = useMemo(() => {
     return devices.filter((device) => {

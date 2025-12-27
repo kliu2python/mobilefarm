@@ -41,6 +41,7 @@ export default function StreamViewerPage() {
   const [textInput, setTextInput] = useState('');
   const [screenshot, setScreenshot] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [orientation, setOrientation] = useState('portrait');
   const reconnectRef = useRef(null);
   const frameRef = useRef(null);
   const dragRef = useRef(null);
@@ -191,8 +192,10 @@ export default function StreamViewerPage() {
   };
 
   const handlePointerDown = (event) => {
+    event.preventDefault();
     const mapped = mapToDeviceCoordinates(event.clientX, event.clientY);
     if (!mapped) return;
+    event.currentTarget.setPointerCapture?.(event.pointerId);
     dragRef.current = {
       start: mapped,
       clientStart: { x: event.clientX, y: event.clientY },
@@ -205,6 +208,7 @@ export default function StreamViewerPage() {
     if (!end) return;
     const { start, clientStart } = dragRef.current;
     dragRef.current = null;
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
 
     const distance = Math.hypot(event.clientX - clientStart.x, event.clientY - clientStart.y);
     if (distance < 10) {
@@ -212,6 +216,38 @@ export default function StreamViewerPage() {
     } else {
       sendCommand('/swipe', { x: start.x, y: start.y, endX: end.x, endY: end.y });
     }
+  };
+
+  const swipeDirection = (direction) => {
+    const width = info?.screen_width || info?.ScreenWidth;
+    const height = info?.screen_height || info?.ScreenHeight;
+    if (!width || !height) return;
+
+    const centerX = Math.round(width / 2);
+    const centerY = Math.round(height / 2);
+    const offset = Math.round(Math.min(width, height) * 0.25);
+
+    const deltas = {
+      up: { endX: centerX, endY: centerY - offset },
+      down: { endX: centerX, endY: centerY + offset },
+      left: { endX: centerX - offset, endY: centerY },
+      right: { endX: centerX + offset, endY: centerY },
+    };
+
+    const delta = deltas[direction];
+    if (!delta) return;
+
+    sendCommand('/swipe', {
+      x: centerX,
+      y: centerY,
+      endX: delta.endX,
+      endY: delta.endY,
+    });
+  };
+
+  const rotateOrientation = (nextOrientation) => {
+    setOrientation(nextOrientation);
+    sendCommand('/update-stream-settings', { orientation: nextOrientation });
   };
 
   const requestScreenshot = () => {
@@ -262,7 +298,7 @@ export default function StreamViewerPage() {
         subtitle="Health, control channel, and MJPEG feed rendered in a dedicated view."
         actions={
           <div className="hero-cta">
-            <button className="ghost" onClick={() => navigate(-1)}>
+            <button className="ghost" onClick={() => navigate('/devices')}>
               Back
             </button>
             <button className="ghost" onClick={() => window.location.reload()}>
@@ -304,6 +340,26 @@ export default function StreamViewerPage() {
             <button className="ghost" onClick={() => sendCommand('/unlock')}>Unlock</button>
             <button className="ghost" onClick={() => sendCommand('/home')}>Home</button>
             <button className="ghost" onClick={requestScreenshot}>Screenshot</button>
+          </div>
+          <div className="button-row">
+            <button className="ghost" onClick={() => swipeDirection('left')} disabled={!info}>Swipe left</button>
+            <button className="ghost" onClick={() => swipeDirection('right')} disabled={!info}>Swipe right</button>
+            <button className="ghost" onClick={() => swipeDirection('up')} disabled={!info}>Swipe up</button>
+            <button className="ghost" onClick={() => swipeDirection('down')} disabled={!info}>Swipe down</button>
+          </div>
+          <div className="button-row">
+            <button
+              className={`ghost ${orientation === 'portrait' ? 'active' : ''}`}
+              onClick={() => rotateOrientation('portrait')}
+            >
+              Portrait
+            </button>
+            <button
+              className={`ghost ${orientation === 'landscape' ? 'active' : ''}`}
+              onClick={() => rotateOrientation('landscape')}
+            >
+              Landscape
+            </button>
           </div>
           <label htmlFor="typeText">Type text</label>
           <div className="button-row">
@@ -356,11 +412,13 @@ export default function StreamViewerPage() {
               </div>
               {streamUrl ? (
                 <img
-                  className="stream-view"
+                  className={`stream-view ${orientation === 'landscape' ? 'landscape' : ''}`}
                   src={streamUrl}
                   alt={`Live stream for ${udid}`}
                   onPointerDown={handlePointerDown}
                   onPointerUp={handlePointerUp}
+                  onPointerMove={(e) => e.preventDefault()}
+                  onDragStart={(e) => e.preventDefault()}
                 />
               ) : (
                 <p className="muted">Stream unavailable: missing token.</p>
