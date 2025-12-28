@@ -44,6 +44,7 @@ export default function StreamViewerPage() {
   const [orientation, setOrientation] = useState('portrait');
   const reconnectRef = useRef(null);
   const frameRef = useRef(null);
+  const streamRef = useRef(null);
   const dragRef = useRef(null);
 
   const streamUrl = useMemo(() => {
@@ -161,8 +162,9 @@ export default function StreamViewerPage() {
   }, [info?.workspace_id, info?.WorkspaceID, info?.workspaceId, token, udid]);
 
   const mapToDeviceCoordinates = (clientX, clientY) => {
-    if (!frameRef.current) return null;
-    const rect = frameRef.current.getBoundingClientRect();
+    const element = streamRef.current || frameRef.current;
+    if (!element) return null;
+    const rect = element.getBoundingClientRect();
     const ratioX = (clientX - rect.left) / rect.width;
     const ratioY = (clientY - rect.top) / rect.height;
     const screenWidth = info?.screen_width || info?.ScreenWidth;
@@ -415,6 +417,7 @@ export default function StreamViewerPage() {
                   className={`stream-view ${orientation === 'landscape' ? 'landscape' : ''}`}
                   src={streamUrl}
                   alt={`Live stream for ${udid}`}
+                  ref={streamRef}
                   onPointerDown={handlePointerDown}
                   onPointerUp={handlePointerUp}
                   onPointerMove={(e) => e.preventDefault()}
